@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>FlotaGema</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+:root{--bg:#f5f5f3;--sur:#fff;--sur2:#f0efed;--bdr:#e2e0dc;--bdr2:#d0ceca;--tx:#1a1916;--tx2:#6b6760;--tx3:#9c9890;--red:#c0392b;--rbg:#fdf1f0;--rbd:#f5c6c2;--amb:#b7600a;--abg:#fef6ec;--abd:#fcdcb0;--grn:#1a6b3a;--gbg:#f0f8f3;--gbd:#b8e0c8;--blu:#1a4a8a;--bbg:#f0f5fd;--bbd:#b8d0f0;--r:10px;--rs:6px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--tx);font-size:14px;height:100vh;overflow:hidden;display:flex}
+.sidebar{width:215px;background:var(--sur);border-right:1px solid var(--bdr);display:flex;flex-direction:column;flex-shrink:0;height:100vh;overflow-y:auto}
+.logo{padding:18px 16px 14px;border-bottom:1px solid var(--bdr)}
+.logo-name{font-size:16px;font-weight:800;letter-spacing:-.5px}
+.logo-sub{font-size:10px;color:var(--tx3);letter-spacing:.5px;text-transform:uppercase;margin-top:2px}
+.sb-sec{padding:12px 8px 4px}
+.sb-lbl{font-size:10px;color:var(--tx3);letter-spacing:.8px;text-transform:uppercase;padding:0 8px;margin-bottom:6px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px;border-radius:var(--rs);cursor:pointer;color:var(--tx2);font-size:13px;margin-bottom:2px;transition:background .12s}
+.nav-item:hover{background:var(--sur2);color:var(--tx)}
+.nav-item.active{background:var(--tx);color:#fff}
+.nav-item i{font-size:15px}
+.sb-div{height:1px;background:var(--bdr);margin:6px 8px}
+.unit-row{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:var(--rs);font-size:12px;color:var(--tx2);margin-bottom:2px;cursor:pointer}
+.unit-row:hover{background:var(--sur2)}
+.unit-row.active-unit{background:var(--sur2);font-weight:600;color:var(--tx)}
+.udot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sb-total{padding:14px 16px;margin-top:auto;border-top:1px solid var(--bdr);font-size:11px;color:var(--tx3)}
+.sb-total strong{color:var(--tx);font-size:13px;display:block;margin-bottom:2px}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;height:100vh}
+.topbar{background:var(--sur);border-bottom:1px solid var(--bdr);padding:12px 22px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:12px}
+.tb-left{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.tb-title{font-size:15px;font-weight:600}
+.tb-sub{font-size:11px;color:var(--tx3);margin-top:1px}
+.uf{display:flex;gap:3px;background:var(--sur2);border-radius:var(--rs);padding:3px}
+.uf-btn{background:none;border:none;border-radius:4px;padding:5px 11px;font-size:12px;font-weight:500;color:var(--tx2);cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.uf-btn:hover{background:rgba(255,255,255,.7);color:var(--tx)}
+.uf-btn.active{background:var(--sur);color:var(--tx);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.tb-right{display:flex;gap:8px;flex-shrink:0}
+.btn{border:1px solid var(--bdr2);background:var(--sur);border-radius:var(--rs);padding:7px 13px;font-size:12px;color:var(--tx);cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:background .12s}
+.btn:hover{background:var(--sur2)}
+.btn-p{background:var(--tx);color:#fff;border-color:var(--tx)}
+.btn-p:hover{background:#333}
+.content{flex:1;overflow-y:auto;padding:20px 22px}
+.vsel{display:flex;gap:10px;margin-bottom:20px;overflow-x:auto;padding-bottom:4px}
+.vcard{flex-shrink:0;background:var(--sur);border:1.5px solid var(--bdr);border-radius:var(--r);padding:11px 14px;cursor:pointer;transition:all .15s;min-width:140px;max-width:165px}
+.vcard:hover{border-color:var(--bdr2)}
+.vcard.sel{border-color:var(--tx);background:var(--tx)}
+.vcard.sel .vcp{color:#fff}.vcard.sel .vcn{color:rgba(255,255,255,.65)}.vcard.sel .vcu{background:rgba(255,255,255,.15);color:rgba(255,255,255,.9)}
+.vcard.valert{border-color:var(--rbd)}.vcard.vwarn{border-color:var(--abd)}
+.vcp{font-size:12px;font-weight:700;letter-spacing:1px;font-family:'Courier New',monospace;color:var(--tx)}
+.vcn{font-size:10px;color:var(--tx3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vcu{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;margin-top:6px;background:var(--sur2);color:var(--tx2)}
+.vdot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-left:5px;vertical-align:middle}
+.tag-multa{display:inline-block;background:var(--rbg);color:var(--red);border:1px solid var(--rbd);font-size:9px;font-weight:600;padding:1px 6px;border-radius:20px;margin-left:4px}
+.vadd{border-style:dashed!important;display:flex;align-items:center;justify-content:center;gap:5px;color:var(--tx3)!important;font-size:12px;min-width:110px}
+.detail-grid{display:grid;grid-template-columns:1fr 310px;gap:14px}
+.veh-hdr{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);padding:18px 20px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.big-plate{font-size:22px;font-weight:800;letter-spacing:2px;font-family:'Courier New',monospace}
+.veh-model{font-size:13px;color:var(--tx2);margin-top:3px}
+.veh-meta{display:flex;gap:14px;margin-top:12px;flex-wrap:wrap}
+.vm-label{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px}
+.vm-val{font-size:11px;font-weight:500;margin-top:2px;font-family:monospace}
+.vm-val.nm{font-family:inherit;font-size:12px}
+.sbadge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.sbadge i{font-size:13px}
+.sb-wk{background:var(--bbg);color:var(--blu);border:1px solid var(--bbd)}
+.sb-ok{background:var(--gbg);color:var(--grn);border:1px solid var(--gbd)}
+.sb-al{background:var(--rbg);color:var(--red);border:1px solid var(--rbd)}
+.sb-wn{background:var(--abg);color:var(--amb);border:1px solid var(--abd)}
+.sec-title{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.8px;font-weight:600;margin-bottom:8px}
+.doc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.dcrd{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);padding:12px 14px;position:relative}
+.dcrd.dal{border-color:var(--rbd);background:var(--rbg)}.dcrd.dwn{border-color:var(--abd);background:var(--abg)}.dcrd.dok{border-color:var(--gbd);background:var(--gbg)}
+.dc-top{display:flex;align-items:flex-start;justify-content:space-between}
+.dc-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--tx3);display:flex;align-items:center;gap:4px}
+.dc-lbl i{font-size:12px}
+.dal .dc-lbl{color:var(--red)}.dwn .dc-lbl{color:var(--amb)}.dok .dc-lbl{color:var(--grn)}
+.dc-edit-btn{background:none;border:none;cursor:pointer;padding:2px 5px;border-radius:4px;color:var(--tx3);font-size:11px;opacity:0;transition:opacity .15s;display:flex;align-items:center;gap:3px}
+.dcrd:hover .dc-edit-btn{opacity:1}
+.dc-edit-btn:hover{background:rgba(0,0,0,.07);color:var(--tx)}
+.dc-v{font-size:16px;font-weight:700;color:var(--tx);margin-top:5px}
+.dal .dc-v{color:var(--red)}.dwn .dc-v{color:var(--amb)}.dok .dc-v{color:var(--grn)}
+.dc-s{font-size:11px;color:var(--tx2);margin-top:2px}
+.dal .dc-s{color:#d05040}.dwn .dc-s{color:#c07020}.dok .dc-s{color:#2a8a50}
+.ie-wrap{margin-top:8px;padding-top:8px;border-top:1px solid rgba(0,0,0,.08);display:none}
+.ie-wrap input,.ie-wrap select{width:100%;border:1px solid var(--bdr2);border-radius:var(--rs);padding:5px 8px;font-size:12px;color:var(--tx);background:var(--sur);outline:none;font-family:inherit;margin-bottom:5px}
+.ie-wrap input:focus,.ie-wrap select:focus{border-color:var(--tx)}
+.ie-actions{display:flex;gap:6px;margin-top:4px}
+.ie-save{background:var(--tx);color:#fff;border:none;border-radius:4px;padding:4px 12px;font-size:11px;cursor:pointer}
+.ie-cancel{background:none;border:1px solid var(--bdr2);border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;color:var(--tx2)}
+.multas-card{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);padding:14px 16px;margin-bottom:14px}
+.multa-total{font-size:20px;font-weight:800;color:var(--red);margin:6px 0 10px}
+.multa-jur{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:12px}
+.multa-jur:last-child{border-bottom:none}
+.no-multas{font-size:12px;color:var(--grn);display:flex;align-items:center;gap:6px;padding:4px 0}
+.km-card{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;margin-bottom:14px}
+.km-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.km-v{font-size:19px;font-weight:700}
+.km-bar-bg{background:var(--sur2);border-radius:4px;height:7px;overflow:hidden;margin-bottom:5px}
+.km-bar-fill{height:7px;border-radius:4px}
+.km-lbl{display:flex;justify-content:space-between;font-size:10px;color:var(--tx3)}
+.ws-banner{background:var(--bbg);border:1px solid var(--bbd);border-radius:var(--r);padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px}
+.ws-icon{font-size:20px;color:var(--blu);flex-shrink:0}
+.ws-title{font-size:13px;font-weight:600;color:var(--blu)}
+.ws-sub{font-size:11px;color:#2a5aa0;margin-top:2px}
+.right-col{display:flex;flex-direction:column;gap:12px}
+.panel{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);overflow:hidden}
+.ph{padding:11px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
+.ph-title{font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
+.ph-title i{font-size:13px}
+.ph-action{font-size:11px;color:var(--tx3);cursor:pointer;padding:2px 6px;border-radius:4px}
+.ph-action:hover{background:var(--sur2);color:var(--tx)}
+.ri{padding:10px 14px;border-bottom:1px solid var(--bdr)}
+.ri:last-child{border-bottom:none}
+.ri-date{font-size:10px;color:var(--tx3);margin-bottom:2px}
+.ri-desc{font-size:12px;font-weight:500;color:var(--tx)}
+.ri-taller{font-size:11px;color:var(--tx2);margin-top:2px;display:flex;align-items:center;gap:4px}
+.ri-cost{font-size:12px;font-weight:600;color:var(--tx);margin-top:3px}
+.ai{padding:10px 14px;border-bottom:1px solid var(--bdr);display:flex;gap:9px;align-items:flex-start}
+.ai:last-child{border-bottom:none}
+.ai-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.ai-title{font-size:12px;font-weight:600}
+.ai-sub{font-size:11px;color:var(--tx2);margin-top:1px}
+.empty{padding:16px;text-align:center;color:var(--tx3);font-size:12px}
+.empty i{font-size:20px;display:block;margin-bottom:5px}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--sur);border-radius:var(--r);border:1px solid var(--bdr);padding:20px;width:390px;max-height:88vh;overflow-y:auto}
+.modal h3{font-size:14px;font-weight:600;margin-bottom:14px}
+.fr{margin-bottom:10px}
+.fr label{font-size:11px;color:var(--tx2);display:block;margin-bottom:4px}
+.fr input,.fr select,.fr textarea{width:100%;border:1px solid var(--bdr2);border-radius:var(--rs);padding:7px 10px;font-size:13px;color:var(--tx);background:var(--sur);outline:none;font-family:inherit}
+.fr input:focus,.fr select:focus{border-color:var(--tx)}
+.fr textarea{height:54px;resize:vertical}
+.modal-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="logo"><div class="logo-name">FlotaGema</div><div class="logo-sub">Gestion vehicular</div></div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Panel</div>
+    <div class="nav-item active"><i class="ti ti-layout-dashboard"></i>Dashboard</div>
+    <div class="nav-item" onclick="openModal('vehiculo')"><i class="ti ti-car"></i>Vehiculos</div>
+    <div class="nav-item" onclick="openModal('servicio')"><i class="ti ti-oil"></i>Services</div>
+    <div class="nav-item" onclick="openModal('reparacion')"><i class="ti ti-settings-2"></i>Reparaciones</div>
+  </div>
+  <div class="sb-div"></div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Unidades</div>
+    <div class="unit-row" onclick="setFilter('GEMA',null)"><span class="udot" style="background:#1a4a8a"></span><span id="sb-gema">GEMA</span></div>
+    <div class="unit-row" onclick="setFilter('URC',null)"><span class="udot" style="background:#1a6b3a"></span><span id="sb-urc">URC</span></div>
+    <div class="unit-row" onclick="setFilter('PEX',null)"><span class="udot" style="background:#5a2d82"></span>PEX</div>
+  </div>
+  <div class="sb-total"><strong id="sb-count">--</strong>flota registrada</div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tb-left">
+      <div><div class="tb-title">Flota general</div><div class="tb-sub" id="tb-sub">Selecciona un vehiculo</div></div>
+      <div class="uf" id="uf">
+        <button class="uf-btn active" onclick="setFilter('all',this)">Todas</button>
+        <button class="uf-btn" onclick="setFilter('GEMA',this)"><span style="width:7px;height:7px;border-radius:50%;background:#1a4a8a;display:inline-block"></span>GEMA</button>
+        <button class="uf-btn" onclick="setFilter('URC',this)"><span style="width:7px;height:7px;border-radius:50%;background:#1a6b3a;display:inline-block"></span>URC</button>
+        <button class="uf-btn" onclick="setFilter('PEX',this)"><span style="width:7px;height:7px;border-radius:50%;background:#5a2d82;display:inline-block"></span>PEX</button>
+      </div>
+    </div>
+    <div class="tb-right">
+      <button class="btn" onclick="openModal('servicio')"><i class="ti ti-plus"></i>Service</button>
+      <button class="btn btn-p" onclick="openModal('vehiculo')"><i class="ti ti-plus"></i>Vehiculo</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="vsel" id="vsel"></div>
+    <div id="detail"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal" onclick="closeBg(event)">
+  <div class="modal">
+    <h3 id="m-title"></h3>
+    <div id="m-body"></div>
+    <div class="modal-foot">
+      <button class="btn" onclick="document.getElementById('modal').classList.remove('open')">Cancelar</button>
+      <button class="btn btn-p" onclick="saveModal()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var multas = {
+  "IQM750":  [{j:"G.C.B.A.",m:7101175.26},{j:"Buenos Aires Pcia.",m:2725200},{j:"Lomas de Zamora",m:363150}],
+  "NVH793":  [{j:"Buenos Aires Pcia.",m:4769100},{j:"G.C.B.A.",m:2849970},{j:"Santa Fe",m:504852.5},{j:"Entre Rios",m:1048320},{j:"Bariloche",m:147900}],
+  "GJA632":  [{j:"G.C.B.A.",m:5509942},{j:"Buenos Aires Pcia.",m:2537049},{j:"Santa Fe",m:425437.5},{j:"Lomas de Zamora",m:363150},{j:"Bariloche",m:295800}],
+  "AF614EH": [{j:"Buenos Aires Pcia.",m:4253925},{j:"Chaco",m:317082},{j:"Misiones",m:1897500}]
+};
+
+var flota = [
+  {id:1, pat:"IQM 750", pk:"IQM750",    veh:"Alfa Romeo Mito",              anio:2010, und:"GEMA", chasis:"ZAR955000A1066274",    motor:"199A80001441914",    aseg:"San Cristobal", tseg:"Todo riesgo con franquicia", seguro:"2025-10-15", vtv:"2025-09-01", imp:"2025-12-31", km:89400,  lsrv:82000, estado:"taller",     taller:"Taller Matano",           obs:"Revision tren delantero - ruido rueda derecha"},
+  {id:2, pat:"XMV 557", pk:"XMV557",    veh:"Ford 37",                      anio:1937, und:"GEMA", chasis:"",                     motor:"",                   aseg:"",              tseg:"",                          seguro:"2025-08-20", vtv:"2025-07-15", imp:"2025-12-31", km:12000,  lsrv:10000, estado:"taller",     taller:"Autos Clasicos Etchard",  obs:"Cilindro freno + soporte espejo + ornamento baul + cerradura guantera"},
+  {id:3, pat:"AF614EH", pk:"AF614EH",   veh:"Toyota Corolla Cross HEV 1.8", anio:2022, und:"GEMA", chasis:"9BRKZAAG6P0634349",    motor:"2ZR2R19270",         aseg:"",              tseg:"Todo riesgo",               seguro:"",          vtv:"2025-12-10", imp:"2025-12-31", km:0,      lsrv:0,     estado:"disponible", taller:"",                        obs:"Grabado de autopartes pendiente"},
+  {id:4, pat:"NVH 793", pk:"NVH793",    veh:"Mercedes Benz ML 350 4MATIC",  anio:2014, und:"GEMA", chasis:"WDCDA5HB2EA351490",    motor:"27695530595350",     aseg:"",              tseg:"",                          seguro:"",          vtv:"",           imp:"",           km:0,      lsrv:0,     estado:"disponible", taller:"",                        obs:""},
+  {id:5, pat:"GJA 632", pk:"GJA632",    veh:"Kia Carnival EX",              anio:2007, und:"GEMA", chasis:"KNAMB761376161108",    motor:"J37200334",          aseg:"",              tseg:"",                          seguro:"",          vtv:"",           imp:"",           km:0,      lsrv:0,     estado:"disponible", taller:"",                        obs:""},
+  {id:6, pat:"AI357II", pk:"AI357II",   veh:"BYD Song Pro DM-I GS",         anio:2026, und:"GEMA", chasis:"LC0C74C43T5039273",    motor:"BYD472QAS25709601",  aseg:"",              tseg:"",                          seguro:"",          vtv:"2029-07-14", imp:"",           km:0,      lsrv:0,     estado:"disponible", taller:"",                        obs:"Grabado de autopartes pendiente"},
+  {id:7, pat:"AE565YL", pk:"AE565YL",   veh:"Renault Captur Zen 2.0",       anio:2021, und:"GEMA", chasis:"93YRHAAA2MJ692278",    motor:"F4RE412C198146",     aseg:"",              tseg:"",                          seguro:"",          vtv:"2024-01-05", imp:"",           km:0,      lsrv:0,     estado:"disponible", taller:"",                        obs:""},
+  {id:8, pat:"AD884SW", pk:"AD884SW",   veh:"Chevrolet Onix 1.4 JOY LS",    anio:2019, und:"URC",  chasis:"9BGKL48T0KG315723",   motor:"JTV018975",          aseg:"",              tseg:"",                          seguro:"",          vtv:"",           imp:"",           km:120348, lsrv:0,     estado:"taller",     taller:"Perito Seguro",           obs:"Por revision perito seguro"},
+  {id:9, pat:"AD884TA", pk:"AD884TA",   veh:"Chevrolet Onix 1.4 JOY LS",    anio:2019, und:"URC",  chasis:"9BGKL48T0KG315533",   motor:"JTV018374",          aseg:"",              tseg:"",                          seguro:"",          vtv:"",           imp:"",           km:150000, lsrv:0,     estado:"disponible", taller:"",                        obs:""},
+  {id:10,pat:"AF965YK", pk:"AF965YK",   veh:"Fiat Cronos 1.3 Drive",        anio:2023, und:"URC",  chasis:"8AP359AF2RU295351",   motor:"552820598467446",    aseg:"",              tseg:"",                          seguro:"",          vtv:"",           imp:"",           km:42659,  lsrv:0,     estado:"disponible", taller:"",                        obs:""},
+  {id:11,pat:"AG433DA", pk:"AG433DA",   veh:"Chevrolet Onix JOY 1.4 MT 4P", anio:2024, und:"URC",  chasis:"9BGKL69T0PB185024",   motor:"MAC009947",          aseg:"",              tseg:"",                          seguro:"",          vtv:"",           imp:"",           km:44779,  lsrv:0,     estado:"disponible", taller:"",                        obs:""},
+  {id:12,pat:"AG433DG", pk:"AG433DG",   veh:"Chevrolet Onix JOY 1.4 MT 5P", anio:2024, und:"URC",  chasis:"9BGKL48T0PB180713",   motor:"MAC009855",          aseg:"",              tseg:"",                          seguro:"",          vtv:"",           imp:"",           km:0,      lsrv:0,     estado:"disponible", taller:"",                        obs:"Sin Km cargado"},
+  {id:13,pat:"AG433DP", pk:"AG433DP",   veh:"Chevrolet Onix JOY 1.4 MT 5P", anio:2024, und:"URC",  chasis:"9BGKL48T0PB194028",   motor:"MAC010348",          aseg:"",              tseg:"",                          seguro:"",          vtv:"",           imp:"",           km:31715,  lsrv:0,     estado:"disponible", taller:"",                        obs:""},
+  {id:14,pat:"AH157UV", pk:"AH157UV",   veh:"Fiat Cronos 1.3 Drive",        anio:2025, und:"URC",  chasis:"8AP359AF2SU442442",   motor:"552820599160500",    aseg:"",              tseg:"",                          seguro:"",          vtv:"",           imp:"",           km:12460,  lsrv:0,     estado:"disponible", taller:"",                        obs:"Plan de ahorro"},
+  {id:15,pat:"AH195DH", pk:"AH195DH",   veh:"Chevrolet Onix JOY 1.4 MT 4P", anio:2025, und:"URC",  chasis:"9BGEN69K0SG118391",   motor:"L4F240864208",       aseg:"",              tseg:"",                          seguro:"",          vtv:"",           imp:"",           km:17728,  lsrv:0,     estado:"disponible", taller:"",                        obs:"Plan de ahorro"},
+  {id:16,pat:"AI017OO", pk:"AI017OO",   veh:"Fiat Cronos 1.3 Drive",        anio:2026, und:"URC",  chasis:"8AP359AF2TU49S064",   motor:"552820599578129",    aseg:"",              tseg:"",                          seguro:"",          vtv:"",           imp:"",           km:860,    lsrv:0,     estado:"disponible", taller:"",                        obs:"Plan de ahorro"}
+];
+
+var reps = [
+  {id:1,fid:2,fecha:"2025-07-28",desc:"Cilindro freno trasero derecho + soporte espejo izq + ornamento tapa baul + cerradura guantera",taller:"Autos Clasicos Etchard",costo:800000},
+  {id:2,fid:1,fecha:"2025-07-27",desc:"Ingreso revision tren delantero (ruido rueda derecha)",taller:"Taller Matano",costo:0}
+];
+var srvs  = [];
+var selId = 1;
+var mtype = "";
+var activeFilter = "all";
+
+function days(d){ if(!d) return 9999; return Math.round((new Date(d)-new Date())/86400000); }
+function fmt(d){ if(!d) return "-"; var p=d.split("-"); return p[2]+"/"+p[1]+"/"+p[0]; }
+function cls(d){ return d<=0?"dal":d<=30?"dwn":"dok"; }
+function lbl(d){ return d<=0?"Vencido":d<=30?"Vence en "+d+"d":"OK"; }
+function ico(d){ return d<=0?"ti-alert-circle":d<=30?"ti-clock":"ti-circle-check"; }
+function worst(v){ return Math.min(days(v.seguro||""),days(v.vtv||""),days(v.imp||"")); }
+function totalM(pk){ var m=multas[pk]; if(!m) return 0; return m.reduce(function(a,b){return a+b.m;},0); }
+function nAR(n){ return n.toLocaleString("es-AR"); }
+function ucol(u){ return u==="GEMA"?"#1a4a8a":u==="URC"?"#1a6b3a":"#5a2d82"; }
+function ubg(u){ return u==="GEMA"?"#e8f0fc":u==="URC"?"#e6f4ed":"#f3edfb"; }
+function gv(id){ var e=document.getElementById(id); return e?e.value:""; }
+
+function setFilter(f,btn){
+  activeFilter = f;
+  document.querySelectorAll(".uf-btn").forEach(function(b){b.classList.remove("active");});
+  if(btn) btn.classList.add("active");
+  else {
+    var map={"all":0,"GEMA":1,"URC":2,"PEX":3};
+    var btns=document.querySelectorAll(".uf-btn");
+    if(btns[map[f]]) btns[map[f]].classList.add("active");
+  }
+  var visible = flota.filter(function(v){ return f==="all"||v.und===f; });
+  if(visible.length>0 && !visible.find(function(v){return v.id===selId;})) selId=visible[0].id;
+  renderSel(); renderDetail();
+}
+
+function renderSel(){
+  var el=document.getElementById("vsel"), h="";
+  var list = flota.filter(function(v){ return activeFilter==="all"||v.und===activeFilter; });
+  for(var i=0;i<list.length;i++){
+    var v=list[i];
+    var wd=worst(v), kd=v.km-v.lsrv, tm=totalM(v.pk);
+    var ac=wd<=0||kd>=10000?"valert":wd<=30||kd>=7000?"vwarn":"";
+    var dot=v.estado==="taller"?"#1a4a8a":wd<=0||kd>=10000?"#c0392b":wd<=30?"#b7600a":"#1a6b3a";
+    var sel=v.id===selId?"sel":"";
+    var cuSt=sel?"background:rgba(255,255,255,.15);color:rgba(255,255,255,.9)":"background:"+ubg(v.und)+";color:"+ucol(v.und);
+    h+='<div class="vcard '+ac+" "+sel+'" onclick="selVeh('+v.id+')">';
+    h+='<div class="vcp">'+v.pat+'<span class="vdot" style="background:'+dot+'"></span></div>';
+    h+='<div class="vcn">'+v.veh+"</div>";
+    h+='<span class="vcu" style="'+cuSt+'">'+v.und+"</span>";
+    if(tm>0) h+='<span class="tag-multa">Multas</span>';
+    h+="</div>";
+  }
+  h+='<div class="vcard vadd" onclick="openModal(\'vehiculo\')"><i class="ti ti-plus" style="font-size:15px"></i>Agregar</div>';
+  el.innerHTML=h;
+  var shown=list.length;
+  document.getElementById("sb-count").textContent=shown+(activeFilter==="all"?"":" ("+activeFilter+")")+" vehiculos";
+  document.getElementById("sb-gema").textContent="GEMA - "+flota.filter(function(f){return f.und==="GEMA";}).length+" autos";
+  document.getElementById("sb-urc").textContent ="URC - "+flota.filter(function(f){return f.und==="URC";}).length+" autos";
+}
+
+function renderDetail(){
+  var v=null;
+  for(var i=0;i<flota.length;i++) if(flota[i].id===selId){v=flota[i];break;}
+  if(!v){document.getElementById("detail").innerHTML="";return;}
+  document.getElementById("tb-sub").textContent=v.veh+" - "+v.und+" - "+v.pat;
+  var sd=days(v.seguro||""), vd=days(v.vtv||""), id=days(v.imp||"");
+  var kd=v.km-v.lsrv, kpct=Math.min(kd/10000,1), knext=v.lsrv+10000;
+  var kc=kpct>=1?"#c0392b":kpct>=0.7?"#b7600a":"#1a6b3a";
+  var tm=multas[v.pk], tmT=totalM(v.pk);
+  var rv=[],sv=[];
+  for(var i=0;i<reps.length;i++) if(reps[i].fid===v.id) rv.push(reps[i]);
+  for(var i=0;i<srvs.length;i++) if(srvs[i].fid===v.id) sv.push(srvs[i]);
+  rv.sort(function(a,b){return b.fecha.localeCompare(a.fecha);});
+  sv.sort(function(a,b){return b.fecha.localeCompare(a.fecha);});
+
+  var badge="";
+  if(v.estado==="taller") badge='<span class="sbadge sb-wk"><i class="ti ti-tools"></i>En taller</span>';
+  else if(worst(v)<=0||kpct>=1) badge='<span class="sbadge sb-al"><i class="ti ti-alert-circle"></i>Atencion urgente</span>';
+  else if(worst(v)<=30||kpct>=0.7) badge='<span class="sbadge sb-wn"><i class="ti ti-clock"></i>Revision proxima</span>';
+  else badge='<span class="sbadge sb-ok"><i class="ti ti-circle-check"></i>Al dia</span>';
+
+  var wsbanner="";
+  if(v.estado==="taller"){
+    wsbanner="<div class=\"ws-banner\"><i class=\"ti ti-tools ws-icon\"></i>"
+      +"<div style=\"flex:1\"><div class=\"ws-title\">En taller - "+v.taller+"</div>"
+      +"<div class=\"ws-sub\">"+(v.obs||"Sin observaciones")+"</div></div>"
+      +"<div style=\"display:flex;gap:8px;flex-shrink:0\">"
+      +"<button class=\"btn\" style=\"font-size:11px;padding:5px 12px;border-color:#b8d0f0;color:#1a4a8a\" onclick=\"openIngreso("+v.id+")\">"
+      +"<i class=\"ti ti-tools\"></i> Cambiar taller</button>"
+      +"<button class=\"btn\" style=\"font-size:11px;padding:5px 12px;background:#1a6b3a;color:#fff;border-color:#1a6b3a\" onclick=\"openSalida("+v.id+")\">"
+      +"<i class=\"ti ti-check\"></i> Salio del taller</button>"
+      +"</div></div>";
+  } else {
+    wsbanner="<div style=\"display:flex;justify-content:flex-end;margin-bottom:10px\">"
+      +"<button class=\"btn\" style=\"font-size:11px;padding:5px 12px;border-color:#b8d0f0;color:#1a4a8a\" onclick=\"openIngreso("+v.id+")\">"
+      +"<i class=\"ti ti-tools\"></i> Ingresar a taller</button></div>";
+  }
+  var alerts=[];
+  if(v.seguro&&sd<=30) alerts.push({t:"Seguro "+lbl(sd),s:fmt(v.seguro)+(v.aseg?" - "+v.aseg:""),c:sd<=0?"#c0392b":"#b7600a"});
+  if(v.vtv&&vd<=30) alerts.push({t:"VTV "+lbl(vd),s:fmt(v.vtv),c:vd<=0?"#c0392b":"#b7600a"});
+  if(v.imp&&id<=30) alerts.push({t:"Impuesto "+lbl(id),s:fmt(v.imp),c:id<=0?"#c0392b":"#b7600a"});
+  if(kpct>=0.7&&v.km>0) alerts.push({t:kpct>=1?"Service vencido":"Service proximo",s:nAR(kd)+" km desde ultimo service",c:kpct>=1?"#c0392b":"#b7600a"});
+  if(tmT>0) alerts.push({t:"Multas pendientes",s:"$"+nAR(tmT)+" en "+tm.length+" jurisdiccion(es)",c:"#c0392b"});
+  if(!v.seguro) alerts.push({t:"Seguro sin cargar",s:"Completar datos del seguro",c:"#b7600a"});
+  if(!v.vtv) alerts.push({t:"VTV sin cargar",s:"Completar fecha de vencimiento",c:"#b7600a"});
+
+  function dcrd(titulo,fecha,ddays,sub,hasDato,field){
+    var c=hasDato?cls(ddays):"dwn";
+    var i2=hasDato?ico(ddays):"ti-clock";
+    var val=hasDato?fmt(fecha):"Sin datos";
+    var uid="ie-"+v.id+"-"+field;
+    var curVal=v[field]||"";
+    var extraInputs="";
+    if(field==="seguro"){
+      extraInputs+="<input type='text' class='ie-aseg' placeholder='Aseguradora' value='"+(v.aseg||"")+"' style='width:100%;border:1px solid #d0ceca;border-radius:6px;padding:5px 8px;font-size:12px;margin-bottom:5px;font-family:inherit'>";
+      extraInputs+="<select class='ie-tseg' style='width:100%;border:1px solid #d0ceca;border-radius:6px;padding:5px 8px;font-size:12px;margin-bottom:5px;font-family:inherit'>";
+      var opts=["Todo riesgo","Todo riesgo con franquicia","Terceros completo","Terceros basico"];
+      for(var k=0;k<opts.length;k++) extraInputs+="<option"+(v.tseg===opts[k]?" selected":"")+">"+opts[k]+"</option>";
+      extraInputs+="</select>";
+    }
+    var h="";
+    h+="<div class='dcrd "+c+"'>";
+    h+="<div class='dc-top'>";
+    h+="<div class='dc-lbl'><i class='ti "+i2+"'></i>"+titulo+"</div>";
+    h+="<button class='dc-edit-btn' data-uid='"+uid+"' onclick='toggleWrap(this.getAttribute(\"data-uid\"))'>";
+    h+="<i class='ti ti-pencil'></i> editar</button>";
+    h+="</div>";
+    h+="<div class='dc-v'>"+val+"</div>";
+    h+="<div class='dc-s'>"+sub+"</div>";
+    h+="<div class='ie-wrap' id='"+uid+"' style='display:none'>";
+    h+="<input type='date' class='ie-date' value='"+curVal+"' style='width:100%;border:1px solid #d0ceca;border-radius:6px;padding:5px 8px;font-size:12px;margin-bottom:5px;font-family:inherit'>";
+    h+=extraInputs;
+    h+="<div class='ie-actions'>";
+    h+="<button class='ie-save' data-uid='"+uid+"' data-field='"+field+"' data-vid='"+v.id+"' onclick='saveIE3(this)'>Guardar</button>";
+    h+="<button class='ie-cancel' data-uid='"+uid+"' onclick='hideWrap(this.getAttribute(\"data-uid\"))'>Cancelar</button>";
+    h+="</div></div></div>";
+    return h;
+  }
+
+
+  var segSub=(v.aseg||"Sin aseguradora")+(v.seguro?" - "+(sd<=0?"Vencido hace "+Math.abs(sd)+"d":sd>365?"Vigente":lbl(sd)):" - Completar");
+  var vtvSub=v.vtv?(vd<=0?"Vencida hace "+Math.abs(vd)+"d":vd>365?"Vigente":lbl(vd)):"Completar fecha";
+  var impSub=v.imp?(id<=0?"Vencido hace "+Math.abs(id)+"d":id>365?"Vigente":lbl(id)):"Completar fecha";
+  var srvC=v.km>0?(kpct>=1?"dal":kpct>=0.7?"dwn":"dok"):"dwn";
+
+  var multasH="";
+  if(tmT>0){
+    multasH='<div class="multas-card"><div class="sec-title"><i class="ti ti-alert-triangle" style="font-size:11px;vertical-align:-1px;margin-right:3px;color:var(--red)"></i>Multas nacionales</div><div class="multa-total">$'+nAR(tmT)+"</div>";
+    for(var i=0;i<tm.length;i++) multasH+='<div class="multa-jur"><span style="color:var(--tx2)">'+tm[i].j+'</span><span style="font-weight:600">$'+nAR(tm[i].m)+"</span></div>";
+    multasH+="</div>";
+  } else {
+    multasH='<div class="multas-card"><div class="sec-title">Multas nacionales</div><div class="no-multas"><i class="ti ti-circle-check"></i>Sin multas registradas</div></div>';
+  }
+
+  var kmH="";
+  if(v.km>0){
+    kmH='<div class="km-card"><div class="km-hdr"><div><div class="sec-title" style="margin-bottom:4px">Kilometraje</div><div class="km-v">'+nAR(v.km)+' km</div></div>'
+      +'<div style="text-align:right"><div style="font-size:10px;color:var(--tx3)">Proximo service</div>'
+      +'<div style="font-size:14px;font-weight:700;color:'+kc+'">'+nAR(knext)+' km</div>'
+      +'<div style="font-size:10px;color:var(--tx3)">'+nAR(Math.max(0,knext-v.km))+' km restantes</div></div></div>'
+      +'<div class="km-bar-bg"><div class="km-bar-fill" style="width:'+Math.round(kpct*100)+'%;background:'+kc+'"></div></div>'
+      +'<div class="km-lbl"><span>'+nAR(v.lsrv)+'</span><span>'+Math.round(kpct*100)+'%</span><span>'+nAR(knext)+'</span></div>'
+      +'<div style="display:flex;justify-content:flex-end;margin-top:10px"><button class="btn" style="font-size:11px;padding:5px 11px" onclick="openKm('+v.id+')"><i class="ti ti-speedometer"></i>Actualizar km</button></div></div>';
+  } else {
+    kmH='<div class="km-card"><div class="sec-title" style="margin-bottom:8px">Kilometraje</div><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;color:var(--tx2)">Sin kilometraje cargado</span><button class="btn" style="font-size:11px;padding:5px 11px" onclick="openKm('+v.id+')"><i class="ti ti-speedometer"></i>Cargar km</button></div></div>';
+  }
+
+  var alertsH="";
+  if(alerts.length===0) alertsH='<div class="empty"><i class="ti ti-circle-check" style="color:#1a6b3a"></i>Sin alertas activas</div>';
+  else for(var i=0;i<alerts.length;i++) alertsH+='<div class="ai"><span class="ai-dot" style="background:'+alerts[i].c+'"></span><div><div class="ai-title">'+alerts[i].t+'</div><div class="ai-sub">'+alerts[i].s+'</div></div></div>';
+
+  var repsH="";
+  if(rv.length===0) repsH='<div class="empty"><i class="ti ti-clipboard"></i>Sin reparaciones</div>';
+  else for(var i=0;i<rv.length;i++) repsH+='<div class="ri"><div class="ri-date">'+fmt(rv[i].fecha)+'</div><div class="ri-desc">'+rv[i].desc+'</div><div class="ri-taller"><i class="ti ti-map-pin" style="font-size:10px"></i>'+rv[i].taller+'</div>'+(rv[i].costo?'<div class="ri-cost">$'+nAR(rv[i].costo)+"</div>":"")+"</div>";
+
+  var srvsH="";
+  if(sv.length===0) srvsH='<div class="empty"><i class="ti ti-tool"></i>Sin services</div>';
+  else for(var i=0;i<sv.length;i++) srvsH+='<div class="ri"><div class="ri-date">'+fmt(sv[i].fecha)+'</div><div class="ri-desc">'+sv[i].tipo+'</div><div class="ri-taller">'+nAR(sv[i].km)+' km'+(sv[i].notas?" - "+sv[i].notas:"")+"</div></div>";
+
+  var regH='<div class="ri"><div class="ri-date">Chasis</div><div class="ri-desc" style="font-family:monospace;font-size:11px">'+(v.chasis||"-")+'</div></div>'
+    +'<div class="ri"><div class="ri-date">Motor</div><div class="ri-desc" style="font-family:monospace;font-size:11px">'+(v.motor||"-")+'</div></div>';
+  if(v.obs) regH+='<div class="ri"><div class="ri-date">Obs.</div><div class="ri-desc" style="font-size:11px;color:var(--tx2)">'+v.obs+"</div></div>";
+  regH+='<div style="padding:10px 14px;display:flex;justify-content:flex-end"><button class="btn" style="font-size:11px;padding:5px 11px" onclick="editVeh('+v.id+')"><i class="ti ti-edit"></i>Editar todo</button></div>';
+
+  var h=wsbanner;
+  h+='<div class="detail-grid"><div>';
+  h+='<div class="veh-hdr"><div><div class="big-plate">'+v.pat+'</div><div class="veh-model">'+v.veh+' - '+v.anio+'</div><div class="veh-meta">';
+  if(v.chasis) h+='<div><div class="vm-label">Chasis</div><div class="vm-val">'+v.chasis+'</div></div>';
+  if(v.motor)  h+='<div><div class="vm-label">Motor</div><div class="vm-val">'+v.motor+'</div></div>';
+  h+='<div><div class="vm-label">Unidad</div><div class="vm-val nm">'+v.und+'</div></div>';
+  if(v.tseg) h+='<div><div class="vm-label">Seguro</div><div class="vm-val nm">'+v.tseg+'</div></div>';
+  if(v.aseg) h+='<div><div class="vm-label">Aseg.</div><div class="vm-val nm">'+v.aseg+'</div></div>';
+  h+='</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">'+badge;
+  if(tmT>0) h+='<span style="font-size:11px;color:var(--red);font-weight:600"><i class="ti ti-alert-triangle" style="font-size:11px"></i> $'+nAR(tmT)+'</span>';
+  h+='</div></div>';
+  h+='<div class="sec-title">Vencimientos y documentacion</div><div class="doc-grid">';
+  h+=dcrd("Seguro",v.seguro,sd,segSub,!!v.seguro,"seguro");
+  h+=dcrd("VTV",v.vtv,vd,vtvSub,!!v.vtv,"vtv");
+  h+=dcrd("Impuesto / Patente",v.imp,id,impSub,!!v.imp,"imp");
+  h+='<div class="dcrd '+srvC+'"><div class="dc-top"><div class="dc-lbl"><i class="ti '+(v.km>0?(kpct>=1?"ti-alert-circle":kpct>=0.7?"ti-clock":"ti-circle-check"):"ti-speedometer")+'"></i>Service aceite</div>'
+    +'<button class="dc-edit-btn" onclick="openKm('+v.id+')"><i class="ti ti-pencil"></i> editar</button></div>'
+    +'<div class="dc-v">'+(v.km>0?nAR(v.km)+' km':'Sin Km')+'</div>'
+    +'<div class="dc-s">'+(v.km>0?(kpct>=1?"Service urgente!":"Proximo: "+nAR(knext)+" km"):"Actualizar kilometraje")+'</div></div>';
+  h+='</div>';
+  h+=multasH+kmH;
+  h+='</div><div class="right-col">';
+  h+='<div class="panel"><div class="ph"><span class="ph-title"><i class="ti ti-bell"></i>Alertas</span><span style="font-size:11px;font-weight:600;color:'+(alerts.length?"#c0392b":"#1a6b3a")+'">'+alerts.length+' '+(alerts.length===1?"alerta":"alertas")+'</span></div>'+alertsH+'</div>';
+  h+='<div class="panel"><div class="ph"><span class="ph-title"><i class="ti ti-settings-2"></i>Reparaciones</span><span class="ph-action" onclick="openModal(\'reparacion\')">+ Agregar</span></div>'+repsH+'</div>';
+  h+='<div class="panel"><div class="ph"><span class="ph-title"><i class="ti ti-oil"></i>Services</span><span class="ph-action" onclick="openModal(\'servicio\')">+ Agregar</span></div>'+srvsH+'</div>';
+  h+='<div class="panel"><div class="ph"><span class="ph-title"><i class="ti ti-file-text"></i>Datos registrales</span></div>'+regH+'</div>';
+  h+='</div></div>';
+  document.getElementById("detail").innerHTML=h;
+}
+
+function toggleIE(id){ toggleWrap(id); }
+function toggleWrap(uid){
+  var el=document.getElementById(uid);
+  if(!el) return;
+  el.style.display=el.style.display==="block"?"none":"block";
+}
+function hideWrap(uid){
+  var el=document.getElementById(uid);
+  if(el) el.style.display="none";
+}
+function saveIE3(btn){
+  var uid=btn.getAttribute("data-uid");
+  var field=btn.getAttribute("data-field");
+  var vid=parseInt(btn.getAttribute("data-vid"));
+  saveIE2(uid,field,vid);
+}
+
+function saveIE(field,vid){ saveIE2("ie-"+vid+"-"+field,field,vid); }
+
+function saveIE2(uid,field,vid){
+  var wrap=document.getElementById(uid);
+  if(!wrap) return;
+  var v=flota.find(function(f){return f.id===vid;});
+  var dateEl=wrap.querySelector(".ie-date");
+  if(dateEl && dateEl.value) v[field]=dateEl.value;
+  if(field==="seguro"){
+    var ae=wrap.querySelector(".ie-aseg"), te=wrap.querySelector(".ie-tseg");
+    if(ae && ae.value) v.aseg=ae.value;
+    if(te && te.value) v.tseg=te.value;
+  }
+  renderSel(); renderDetail();
+}
+
+
+function toggleIE(id){ toggleWrap(id); }
+function toggleWrap(uid){
+  var el=document.getElementById(uid);
+  if(!el) return;
+  el.style.display=el.style.display==="block"?"none":"block";
+}
+function hideWrap(uid){
+  var el=document.getElementById(uid);
+  if(el) el.style.display="none";
+}
+function saveIE3(btn){
+  var uid=btn.getAttribute("data-uid");
+  var field=btn.getAttribute("data-field");
+  var vid=parseInt(btn.getAttribute("data-vid"));
+  saveIE2(uid,field,vid);
+}
+
+function saveIE(field,vid){ saveIE2("ie-"+vid+"-"+field, field, vid); }
+
+function saveIE2(uid,field,vid){
+  var v=flota.find(function(f){return f.id===vid;});
+  var dateEl=document.getElementById(uid+"-date");
+  if(dateEl && dateEl.value) v[field]=dateEl.value;
+  if(field==="seguro"){
+    var ae=document.getElementById(uid+"-aseg"), te=document.getElementById(uid+"-tseg");
+    if(ae) v.aseg=ae.value;
+    if(te) v.tseg=te.value;
+  }
+  renderSel(); renderDetail();
+}
+
+function selVeh(id){ selId=id; renderSel(); renderDetail(); }
+
+function openKm(id){
+  var v=flota.find(function(f){return f.id===id;});
+  mtype="km_"+id;
+  document.getElementById("m-title").textContent="Actualizar km - "+v.pat;
+  var kmLbl="Km actuales"+(v.km?" (actual: "+nAR(v.km)+")" :"");
+  document.getElementById("m-body").innerHTML="<div class=\"fr\"><label>"+kmLbl+"</label><input id=\"f-km\" type=\"number\" value=\""+(v.km||0)+"\">"+"</div>";
+  document.getElementById("modal").classList.add("open");
+}
+
+function editVeh(id){
+  var v=flota.find(function(f){return f.id===id;});
+  mtype="edit_"+id;
+  document.getElementById("m-title").textContent="Editar - "+v.pat;
+  document.getElementById("m-body").innerHTML=
+    '<div class="fr"><label>Aseguradora</label><input id="f-aseg" value="'+(v.aseg||"")+'"></div>'
+    +'<div class="fr"><label>Tipo de seguro</label><select id="f-tseg"><option'+(v.tseg==="Todo riesgo"?" selected":"")+'>Todo riesgo</option><option'+(v.tseg==="Todo riesgo con franquicia"?" selected":"")+'>Todo riesgo con franquicia</option><option'+(v.tseg==="Terceros completo"?" selected":"")+'>Terceros completo</option><option'+(v.tseg==="Terceros basico"?" selected":"")+'>Terceros basico</option></select></div>'
+    +'<div class="fr"><label>Vto. seguro</label><input id="f-seg" type="date" value="'+(v.seguro||"")+'"></div>'
+    +'<div class="fr"><label>Vto. VTV</label><input id="f-vtv" type="date" value="'+(v.vtv||"")+'"></div>'
+    +'<div class="fr"><label>Vto. impuesto</label><input id="f-imp" type="date" value="'+(v.imp||"")+'"></div>'
+    +'<div class="fr"><label>Estado</label><select id="f-est"><option value="disponible"'+(v.estado==="disponible"?" selected":"")+'>Disponible</option><option value="taller"'+(v.estado==="taller"?" selected":"")+'>En taller</option></select></div>'
+    +'<div class="fr"><label>Taller</label><input id="f-taller" value="'+(v.taller||"")+'"></div>'
+    +'<div class="fr"><label>Km actuales</label><input id="f-km" type="number" value="'+(v.km||0)+'"></div>'
+    +'<div class="fr"><label>Obs.</label><textarea id="f-obs">'+(v.obs||"")+"</textarea></div>";
+  document.getElementById("modal").classList.add("open");
+}
+
+function openModal(type){
+  mtype=type;
+  var opts=""; for(var i=0;i<flota.length;i++) opts+='<option value="'+flota[i].id+'">'+flota[i].pat+" - "+flota[i].veh+"</option>";
+  var titles={vehiculo:"Nuevo vehiculo",servicio:"Registrar service",reparacion:"Agregar reparacion"};
+  document.getElementById("m-title").textContent=titles[type]||type;
+  var b="", hoy=new Date().toISOString().slice(0,10);
+  if(type==="vehiculo"){
+    b='<div class="fr"><label>Patente</label><input id="f-pat"></div>'
+     +'<div class="fr"><label>Vehiculo</label><input id="f-veh"></div>'
+     +'<div class="fr"><label>Anio</label><input id="f-anio" type="number"></div>'
+     +'<div class="fr"><label>Unidad</label><select id="f-und"><option value="GEMA">GEMA</option><option value="URC">URC</option><option value="PEX">PEX</option></select></div>'
+     +'<div class="fr"><label>Nro. chasis</label><input id="f-chasis"></div>'
+     +'<div class="fr"><label>Nro. motor</label><input id="f-motor"></div>'
+     +'<div class="fr"><label>Km actuales</label><input id="f-km" type="number" value="0"></div>'
+     +'<div class="fr"><label>Aseguradora</label><input id="f-aseg"></div>'
+     +'<div class="fr"><label>Tipo de seguro</label><select id="f-tseg"><option>Todo riesgo</option><option>Todo riesgo con franquicia</option><option>Terceros completo</option><option>Terceros basico</option></select></div>'
+     +'<div class="fr"><label>Vto. seguro</label><input id="f-seg" type="date"></div>'
+     +'<div class="fr"><label>Vto. VTV</label><input id="f-vtv" type="date"></div>'
+     +'<div class="fr"><label>Vto. impuesto</label><input id="f-imp" type="date"></div>';
+  } else if(type==="servicio"){
+    b='<div class="fr"><label>Vehiculo</label><select id="f-vid">'+opts+'</select></div>'
+     +'<div class="fr"><label>Fecha</label><input id="f-fecha" type="date" value="'+hoy+'"></div>'
+     +'<div class="fr"><label>Km</label><input id="f-km" type="number"></div>'
+     +'<div class="fr"><label>Tipo</label><input id="f-tipo" placeholder="Aceite + filtro"></div>'
+     +'<div class="fr"><label>Notas</label><textarea id="f-notas"></textarea></div>';
+  } else if(type==="reparacion"){
+    b='<div class="fr"><label>Vehiculo</label><select id="f-vid">'+opts+'</select></div>'
+     +'<div class="fr"><label>Fecha</label><input id="f-fecha" type="date" value="'+hoy+'"></div>'
+     +'<div class="fr"><label>Descripcion</label><textarea id="f-desc"></textarea></div>'
+     +'<div class="fr"><label>Taller</label><input id="f-taller"></div>'
+     +'<div class="fr"><label>Costo ($)</label><input id="f-costo" type="number"></div>';
+  }
+  document.getElementById("m-body").innerHTML=b;
+  document.getElementById("modal").classList.add("open");
+}
+
+function openSalida(vid){
+  mtype="salida_"+vid;
+  var v=flota.find(function(f){return f.id===vid;});
+  document.getElementById("m-title").textContent="Salida del taller - "+v.pat;
+  document.getElementById("m-body").innerHTML=
+    '<div class="fr"><label>Fecha de salida</label><input id="f-fecha" type="date" value="'+new Date().toISOString().slice(0,10)+'"></div>'
+    +'<div class="fr"><label>Taller</label><input id="f-taller" value="'+(v.taller||"")+'"></div>'
+    +'<div class="fr"><label>Descripcion del trabajo realizado</label><textarea id="f-desc" placeholder="Detalle de reparaciones...">'+(v.obs||"")+"</textarea></div>"
+    +'<div class="fr"><label>Costo total ($)</label><input id="f-costo" type="number" placeholder="0"></div>'
+    +'<div class="fr"><label>Km al momento de la salida</label><input id="f-km" type="number" value="'+(v.km||0)+'"></div>';
+  document.getElementById("modal").classList.add("open");
+}
+
+function openIngreso(vid){
+  mtype="ingreso_"+vid;
+  var v=flota.find(function(f){return f.id===vid;});
+  document.getElementById("m-title").textContent="Ingresar a taller - "+v.pat;
+  document.getElementById("m-body").innerHTML=
+    '<div class="fr"><label>Fecha de ingreso</label><input id="f-fecha" type="date" value="'+new Date().toISOString().slice(0,10)+'"></div>'
+    +'<div class="fr"><label>Taller</label><input id="f-taller" value="'+(v.taller||"")+'"></div>'
+    +'<div class="fr"><label>Motivo / Descripcion</label><textarea id="f-desc" placeholder="Por que ingresa al taller..."></textarea></div>'
+    +'<div class="fr"><label>Km actuales</label><input id="f-km" type="number" value="'+(v.km||0)+'"></div>';
+  document.getElementById("modal").classList.add("open");
+}
+
+function saveModal(){
+  if(mtype==="vehiculo"){
+    var km=parseInt(gv("f-km"))||0;
+    flota.push({id:Date.now(),pat:gv("f-pat").toUpperCase(),pk:gv("f-pat").replace(/[^A-Z0-9]/gi,"").toUpperCase(),veh:gv("f-veh"),anio:parseInt(gv("f-anio"))||0,und:gv("f-und"),chasis:gv("f-chasis"),motor:gv("f-motor"),aseg:gv("f-aseg"),tseg:gv("f-tseg"),seguro:gv("f-seg"),vtv:gv("f-vtv"),imp:gv("f-imp"),km:km,lsrv:0,estado:"disponible",taller:"",obs:""});
+  } else if(mtype==="servicio"){
+    var km=parseInt(gv("f-km"))||0, vid=parseInt(gv("f-vid"));
+    srvs.push({id:Date.now(),fid:vid,fecha:gv("f-fecha"),km:km,tipo:gv("f-tipo"),notas:gv("f-notas")});
+    var v=flota.find(function(f){return f.id===vid;});
+    if(v){v.lsrv=km;v.km=Math.max(v.km,km);}
+  } else if(mtype==="reparacion"){
+    reps.push({id:Date.now(),fid:parseInt(gv("f-vid")),fecha:gv("f-fecha"),desc:gv("f-desc"),taller:gv("f-taller"),costo:parseFloat(gv("f-costo"))||0});
+  } else if(mtype&&mtype.indexOf("salida_")===0){
+    var vid2=parseInt(mtype.slice(7));
+    var v=flota.find(function(f){return f.id===vid2;});
+    if(v){
+      var costo=parseFloat(gv("f-costo"))||0;
+      var desc=gv("f-desc");
+      var taller=gv("f-taller");
+      var km2=parseInt(gv("f-km"))||v.km;
+      v.estado="disponible"; v.km=km2;
+      if(desc||costo) reps.push({id:Date.now(),fid:vid2,fecha:gv("f-fecha"),desc:desc||"Salida de taller",taller:taller,costo:costo});
+      v.obs="";
+    }
+  } else if(mtype&&mtype.indexOf("ingreso_")===0){
+    var vid3=parseInt(mtype.slice(8));
+    var v=flota.find(function(f){return f.id===vid3;});
+    if(v){
+      v.estado="taller";
+      v.taller=gv("f-taller");
+      v.obs=gv("f-desc");
+      v.km=parseInt(gv("f-km"))||v.km;
+    }
+  } else if(mtype&&mtype.indexOf("km_")===0){
+    var v=flota.find(function(f){return f.id===parseInt(mtype.slice(3));});
+    if(v) v.km=parseInt(gv("f-km"))||v.km;
+  } else if(mtype&&mtype.indexOf("edit_")===0){
+    var v=flota.find(function(f){return f.id===parseInt(mtype.slice(5));});
+    if(v){v.aseg=gv("f-aseg");v.tseg=gv("f-tseg");v.seguro=gv("f-seg");v.vtv=gv("f-vtv");v.imp=gv("f-imp");v.estado=gv("f-est");v.taller=gv("f-taller");v.km=parseInt(gv("f-km"))||v.km;v.obs=gv("f-obs");}
+  }
+  document.getElementById("modal").classList.remove("open");
+  renderSel(); renderDetail();
+}
+
+function closeBg(e){ if(e.target.id==="modal") document.getElementById("modal").classList.remove("open"); }
+
+renderSel();
+renderDetail();
+</script>
+</body>
+</html>
