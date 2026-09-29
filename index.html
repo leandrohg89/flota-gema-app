@@ -216,10 +216,11 @@ async function supaLoad(){
 }
 
 async function supaSave(v){
-  await supaFetch("/rest/v1/vehiculos?id=eq."+v.id,"PATCH",
-    {pat:v.pat,pk:v.pk,veh:v.veh,anio:v.anio,und:v.und,chasis:v.chasis,motor:v.motor,
-     aseg:v.aseg,tseg:v.tseg,seguro:v.seguro,vtv:v.vtv,imp:v.imp,km:v.km,
-     lsrv:v.lsrv,estado:v.estado,taller:v.taller,obs:v.obs});
+  var opts = {method:"PATCH", headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY,"Prefer":"return=representation"}};
+  opts.body = JSON.stringify({pat:v.pat,pk:v.pk,veh:v.veh,anio:v.anio,und:v.und,chasis:v.chasis,motor:v.motor,aseg:v.aseg,tseg:v.tseg,seguro:v.seguro,vtv:v.vtv,imp:v.imp,km:v.km,lsrv:v.lsrv,estado:v.estado,taller:v.taller,obs:v.obs});
+  var r = await fetch(SUPA_URL+"/rest/v1/vehiculos?id=eq."+v.id, opts);
+  console.log("supaSave status:", r.status, "id="+v.id);
+  return r.ok;
 }
 
 async function supaInsert(v){
@@ -389,7 +390,7 @@ function renderDetail(){
     h+="<div class='dc-v'>"+val+"</div>";
     h+="<div class='dc-s'>"+sub+"</div>";
     h+="<div class='ie-wrap' id='"+uid+"' style='display:none'>";
-    h+="<input type='date' class='ie-date' value='"+curVal+"' style='width:100%;border:1px solid #d0ceca;border-radius:6px;padding:5px 8px;font-size:12px;margin-bottom:5px;font-family:inherit'>";
+    h+="<input type='date' id='"+uid+"-date' class='ie-date' value='"+curVal+"' style='width:100%;border:1px solid #d0ceca;border-radius:6px;padding:5px 8px;font-size:12px;margin-bottom:5px;font-family:inherit'>";
     h+=extraInputs;
     h+="<div class='ie-actions'>";
     h+="<button class='ie-save' data-uid='"+uid+"' data-field='"+field+"' data-vid='"+v.id+"' onclick='saveIE3(this)'>Guardar</button>";
