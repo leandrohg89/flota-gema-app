@@ -9,6 +9,20 @@
 :root{--bg:#f5f5f3;--sur:#fff;--sur2:#f0efed;--bdr:#e2e0dc;--bdr2:#d0ceca;--tx:#1a1916;--tx2:#6b6760;--tx3:#9c9890;--red:#c0392b;--rbg:#fdf1f0;--rbd:#f5c6c2;--amb:#b7600a;--abg:#fef6ec;--abd:#fcdcb0;--grn:#1a6b3a;--gbg:#f0f8f3;--gbd:#b8e0c8;--blu:#1a4a8a;--bbg:#f0f5fd;--bbd:#b8d0f0;--r:10px;--rs:6px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--tx);font-size:14px;height:100vh;overflow:hidden;display:flex}
+/* Login */
+#login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999}
+.login-box{background:var(--sur);border:1px solid var(--bdr);border-radius:16px;padding:36px 32px;width:100%;max-width:360px;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.login-logo{font-size:20px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
+.login-sub{font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:28px}
+.login-field{margin-bottom:14px}
+.login-field label{display:block;font-size:11px;font-weight:600;color:var(--tx2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
+.login-field input{width:100%;border:1px solid var(--bdr2);border-radius:var(--rs);padding:9px 12px;font-size:13px;color:var(--tx);background:var(--sur);outline:none;font-family:inherit;transition:border .15s}
+.login-field input:focus{border-color:var(--tx)}
+.login-btn{width:100%;background:var(--tx);color:#fff;border:none;border-radius:var(--rs);padding:10px;font-size:13px;font-weight:600;cursor:pointer;margin-top:6px;font-family:inherit;transition:background .15s}
+.login-btn:hover{background:#333}
+.login-btn:disabled{background:#999;cursor:not-allowed}
+.login-err{color:var(--red);font-size:12px;margin-top:10px;text-align:center;min-height:18px}
+#app{display:none}
 .sidebar{width:215px;background:var(--sur);border-right:1px solid var(--bdr);display:flex;flex-direction:column;flex-shrink:0;height:100vh;overflow-y:auto}
 .logo{padding:18px 16px 14px;border-bottom:1px solid var(--bdr)}
 .logo-name{font-size:16px;font-weight:800;letter-spacing:-.5px}
@@ -136,6 +150,27 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 </style>
 </head>
 <body>
+
+<!-- Pantalla de login -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">FlotaGema</div>
+    <div class="login-sub">Gestión vehicular</div>
+    <div class="login-field">
+      <label>Email</label>
+      <input type="email" id="l-email" placeholder="usuario@email.com" autocomplete="email">
+    </div>
+    <div class="login-field">
+      <label>Contraseña</label>
+      <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" id="l-btn" onclick="doLogin()">Ingresar</button>
+    <div class="login-err" id="l-err"></div>
+  </div>
+</div>
+
+<!-- App principal -->
+<div id="app" style="display:none;width:100%;height:100vh;overflow:hidden">
 <aside class="sidebar">
   <div class="logo"><div class="logo-name">FlotaGema</div><div class="logo-sub">Gestion vehicular</div></div>
   <div class="sb-sec">
@@ -153,6 +188,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <div class="unit-row" onclick="setFilter('PEX',null)"><span class="udot" style="background:#5a2d82"></span>PEX</div>
   </div>
   <div class="sb-total"><strong id="sb-count">--</strong>flota registrada</div>
+  <div style="padding:10px 10px 14px">
+    <div style="font-size:11px;color:var(--tx3);margin-bottom:6px;padding:0 6px" id="sb-user"></div>
+    <button onclick="doLogout()" style="width:100%;background:none;border:1px solid var(--bdr2);border-radius:var(--rs);padding:7px;font-size:12px;color:var(--tx2);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit">
+      <i class="ti ti-logout"></i>Cerrar sesión
+    </button>
+  </div>
 </aside>
 
 <div class="main">
@@ -187,11 +228,58 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     </div>
   </div>
 </div>
+</div><!-- /app -->
 
 <script>
 // ── Supabase ──────────────────────────────────────────────────────────────────
 var SUPA_URL = "https://aceieoqgktsycwktvlvq.supabase.co";
 var SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjZWllb3Fna3RzeWN3a3R2bHZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2NTMxMzksImV4cCI6MjEwNjIyOTEzOX0.zw0QyT-FoslOsOwxZCY7-tNb0jyVRRUXvfmN9KJIth0";
+var currentUser = null;
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+async function doLogin(){
+  var email=document.getElementById("l-email").value.trim();
+  var pass=document.getElementById("l-pass").value;
+  var btn=document.getElementById("l-btn");
+  var err=document.getElementById("l-err");
+  if(!email||!pass){err.textContent="Completá email y contraseña.";return;}
+  btn.disabled=true; btn.textContent="Ingresando..."; err.textContent="";
+  try{
+    var r=await fetch(SUPA_URL+"/auth/v1/token?grant_type=password",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","apikey":SUPA_KEY},
+      body:JSON.stringify({email:email,password:pass})
+    });
+    var data=await r.json();
+    if(!r.ok||!data.access_token){
+      err.textContent="Email o contraseña incorrectos.";
+      btn.disabled=false; btn.textContent="Ingresar"; return;
+    }
+    currentUser={email:email, token:data.access_token};
+    document.getElementById("sb-user").textContent=email;
+    document.getElementById("login-screen").style.display="none";
+    document.getElementById("app").style.display="flex";
+    renderSel(); renderDetail(); supaLoad();
+  } catch(e){
+    err.textContent="Error de conexión. Intentá de nuevo.";
+    btn.disabled=false; btn.textContent="Ingresar";
+  }
+}
+
+function doLogout(){
+  currentUser=null;
+  document.getElementById("login-screen").style.display="flex";
+  document.getElementById("app").style.display="none";
+  document.getElementById("l-pass").value="";
+  document.getElementById("l-err").textContent="";
+  document.getElementById("l-btn").disabled=false;
+  document.getElementById("l-btn").textContent="Ingresar";
+}
+
+// Enter para login
+document.addEventListener("keydown",function(e){
+  if(e.key==="Enter" && document.getElementById("login-screen").style.display!=="none") doLogin();
+});
 
 async function supaFetch(path, method, body){
   var opts = {method:method||"GET", headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY}};
@@ -745,10 +833,7 @@ function saveModal(){
 
 function closeBg(e){ if(e.target.id==="modal") document.getElementById("modal").classList.remove("open"); }
 
-// Iniciar: primero render con datos locales, luego reemplazar con Supabase
-renderSel();
-renderDetail();
-supaLoad();
+// El render se inicia después del login exitoso
 </script>
 </body>
 </html>
