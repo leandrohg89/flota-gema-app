@@ -529,15 +529,18 @@ function saveIE(field,vid){ saveIE2("ie-"+vid+"-"+field, field, vid); }
 
 function saveIE2(uid,field,vid){
   var v=flota.find(function(f){return f.id===vid;});
+  if(!v){ console.error("saveIE2: vehiculo no encontrado id="+vid); return; }
   var dateEl=document.getElementById(uid+"-date");
+  console.log("saveIE2 uid="+uid+" field="+field+" vid="+vid+" dateEl="+dateEl+" val="+(dateEl?dateEl.value:"null"));
   if(dateEl && dateEl.value) v[field]=dateEl.value;
   if(field==="seguro"){
     var ae=document.getElementById(uid+"-aseg"), te=document.getElementById(uid+"-tseg");
     if(ae) v.aseg=ae.value;
     if(te) v.tseg=te.value;
   }
+  console.log("Guardando en Supabase id="+v.id+" "+field+"="+v[field]);
+  supaSave(v).then(function(r){ console.log("Supabase PATCH result:", r); });
   renderSel(); renderDetail();
-  if(v) supaSave(v);
 }
 
 function selVeh(id){ selId=id; renderSel(); renderDetail(); }
