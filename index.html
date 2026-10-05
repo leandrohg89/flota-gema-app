@@ -147,6 +147,33 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .fr input:focus,.fr select:focus{border-color:var(--tx)}
 .fr textarea{height:54px;resize:vertical}
 .modal-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+/* Reportes */
+.rep-card{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);padding:16px 18px;margin-bottom:12px;transition:box-shadow .15s}
+.rep-card:hover{box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.rep-card.rep-pendiente{border-left:3px solid #b7600a}
+.rep-card.rep-aprobado{border-left:3px solid #1a6b3a;opacity:.7}
+.rep-card.rep-rechazado{border-left:3px solid #9c9890;opacity:.6}
+.rep-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.rep-pat{font-size:14px;font-weight:700;letter-spacing:1px;font-family:'Courier New',monospace}
+.rep-tipo{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;margin-left:6px;text-transform:uppercase;letter-spacing:.4px}
+.rt-falla{background:var(--rbg);color:var(--red);border:1px solid var(--rbd)}
+.rt-taller{background:var(--bbg);color:var(--blu);border:1px solid var(--bbd)}
+.rt-km{background:var(--gbg);color:var(--grn);border:1px solid var(--gbd)}
+.rt-otro{background:var(--sur2);color:var(--tx2);border:1px solid var(--bdr)}
+.rep-desc{font-size:13px;color:var(--tx);margin-bottom:8px;line-height:1.5}
+.rep-meta{font-size:11px;color:var(--tx3);display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.rep-meta i{font-size:11px;vertical-align:-1px;margin-right:3px}
+.rep-foto{width:72px;height:72px;object-fit:cover;border-radius:6px;border:1px solid var(--bdr);cursor:pointer}
+.rep-fotos{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.rep-actions{display:flex;gap:8px}
+.btn-aprobar{background:#1a6b3a;color:#fff;border:1px solid #1a6b3a;border-radius:var(--rs);padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:background .12s}
+.btn-aprobar:hover{background:#155530}
+.btn-rechazar{background:none;color:var(--tx2);border:1px solid var(--bdr2);border-radius:var(--rs);padding:7px 14px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:background .12s}
+.btn-rechazar:hover{background:var(--sur2)}
+.rep-estado-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.reb-pendiente{background:var(--abg);color:var(--amb);border:1px solid var(--abd)}
+.reb-aprobado{background:var(--gbg);color:var(--grn);border:1px solid var(--gbd)}
+.reb-rechazado{background:var(--sur2);color:var(--tx3);border:1px solid var(--bdr)}
 </style>
 </head>
 <body>
@@ -175,7 +202,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   <div class="logo"><div class="logo-name">FlotaGema</div><div class="logo-sub">Gestion vehicular</div></div>
   <div class="sb-sec">
     <div class="sb-lbl">Panel</div>
-    <div class="nav-item active"><i class="ti ti-layout-dashboard"></i>Dashboard</div>
+    <div class="nav-item active" id="nav-dashboard" onclick="showView('dashboard')"><i class="ti ti-layout-dashboard"></i>Dashboard</div>
+    <div class="nav-item" id="nav-reportes" onclick="showView('reportes')"><i class="ti ti-clipboard-list"></i>Reportes<span id="rep-badge" style="display:none;margin-left:auto;background:#c0392b;color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px"></span></div>
     <div class="nav-item" onclick="openModal('vehiculo')"><i class="ti ti-car"></i>Vehiculos</div>
     <div class="nav-item" onclick="openModal('servicio')"><i class="ti ti-oil"></i>Services</div>
     <div class="nav-item" onclick="openModal('reparacion')"><i class="ti ti-settings-2"></i>Reparaciones</div>
@@ -212,9 +240,21 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
       <button class="btn btn-p" onclick="openModal('vehiculo')"><i class="ti ti-plus"></i>Vehiculo</button>
     </div>
   </div>
-  <div class="content">
+  <div class="content" id="view-dashboard">
     <div class="vsel" id="vsel"></div>
     <div id="detail"></div>
+  </div>
+  <div class="content" id="view-reportes" style="display:none">
+    <div style="max-width:900px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div style="font-size:15px;font-weight:600">Reportes de choferes</div>
+          <div style="font-size:11px;color:var(--tx3);margin-top:2px">Enviados desde la app móvil — aprobá para guardar en reparaciones</div>
+        </div>
+        <button class="btn" onclick="cargarReportes()"><i class="ti ti-refresh"></i>Actualizar</button>
+      </div>
+      <div id="rep-list"><div class="empty" style="padding:40px 0"><i class="ti ti-loader" style="font-size:24px;display:block;margin-bottom:8px"></i>Cargando reportes...</div></div>
+    </div>
   </div>
 </div>
 
@@ -259,7 +299,7 @@ async function doLogin(){
     document.getElementById("sb-user").textContent=email;
     document.getElementById("login-screen").style.display="none";
     document.getElementById("app").style.display="flex";
-    renderSel(); renderDetail(); supaLoad();
+    renderSel(); renderDetail(); supaLoad(); cargarBadgeReportes();
   } catch(e){
     err.textContent="Error de conexión. Intentá de nuevo.";
     btn.disabled=false; btn.textContent="Ingresar";
@@ -296,7 +336,8 @@ async function supaLoad(){
       return {id:r.id,pat:r.pat,pk:r.pk,veh:r.veh,anio:r.anio,und:r.und,
               chasis:r.chasis||"",motor:r.motor||"",aseg:r.aseg||"",tseg:r.tseg||"",
               seguro:r.seguro||"",vtv:r.vtv||"",imp:r.imp||"",km:r.km||0,
-              lsrv:r.lsrv||0,estado:r.estado||"disponible",taller:r.taller||"",obs:r.obs||""};
+              lsrv:r.lsrv||0,estado:r.estado||"disponible",taller:r.taller||"",obs:r.obs||"",
+              telepase_id:r.telepase_id||""};
     });
     renderSel(); renderDetail();
     console.log("Flota cargada desde Supabase:",flota.length,"vehiculos");
@@ -305,7 +346,7 @@ async function supaLoad(){
 
 async function supaSave(v){
   var opts = {method:"PATCH", headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY,"Prefer":"return=representation"}};
-  opts.body = JSON.stringify({pat:v.pat,pk:v.pk,veh:v.veh,anio:v.anio,und:v.und,chasis:v.chasis,motor:v.motor,aseg:v.aseg,tseg:v.tseg,seguro:v.seguro,vtv:v.vtv,imp:v.imp,km:v.km,lsrv:v.lsrv,estado:v.estado,taller:v.taller,obs:v.obs});
+  opts.body = JSON.stringify({pat:v.pat,pk:v.pk,veh:v.veh,anio:v.anio,und:v.und,chasis:v.chasis,motor:v.motor,aseg:v.aseg,tseg:v.tseg,seguro:v.seguro,vtv:v.vtv,imp:v.imp,km:v.km,lsrv:v.lsrv,estado:v.estado,taller:v.taller,obs:v.obs,telepase_id:v.telepase_id||null});
   var r = await fetch(SUPA_URL+"/rest/v1/vehiculos?id=eq."+v.id, opts);
   console.log("supaSave status:", r.status, "id="+v.id);
   return r.ok;
@@ -328,15 +369,15 @@ var multas = {
 };
 
 var flota = [
-  {id:1, pat:"IQM 750", pk:"IQM750",    veh:"Alfa Romeo Mito",              anio:2010, und:"GEMA", chasis:"ZAR955000A1066274",    motor:"199A80001441914",    aseg:"Sancor Seguros", tseg:"Todo riesgo", seguro:"2027-03-30", vtv:"2025-09-01", imp:"2025-12-31", km:89400,  lsrv:82000, estado:"taller",     taller:"Taller Matano",           obs:"Revision tren delantero - ruido rueda derecha"},
-  {id:2, pat:"XMV 557", pk:"XMV557",    veh:"Ford 37",                      anio:1937, und:"GEMA", chasis:"",                     motor:"",                   aseg:"",              tseg:"",                          seguro:"2025-08-20", vtv:"2025-07-15", imp:"2025-12-31", km:12000,  lsrv:10000, estado:"taller",     taller:"Autos Clasicos Etchard",  obs:"Cilindro freno + soporte espejo + ornamento baul + cerradura guantera"},
-  {id:3, pat:"AF614EH", pk:"AF614EH",   veh:"Toyota Corolla Cross HEV 1.8", anio:2022, und:"GEMA", chasis:"9BRKZAAG6P0634349",    motor:"2ZR2R19270",         aseg:"",              tseg:"Todo riesgo",               seguro:"",          vtv:"2025-12-10", imp:"2025-12-31", km:0,      lsrv:0,     estado:"disponible", taller:"",                        obs:"Grabado de autopartes pendiente"},
-  {id:4, pat:"NVH 793", pk:"NVH793",    veh:"Mercedes Benz ML 350 4MATIC",  anio:2014, und:"GEMA", chasis:"WDCDA5HB2EA351490",    motor:"27695530595350",     aseg:"Sancor Seguros",              tseg:"Todo riesgo",                          seguro:"2027-03-30",          vtv:"",           imp:"",           km:0,      lsrv:0,     estado:"disponible", taller:"",                        obs:""},
-  {id:5, pat:"GJA 632", pk:"GJA632",    veh:"Kia Carnival EX",              anio:2007, und:"GEMA", chasis:"KNAMB761376161108",    motor:"J37200334",          aseg:"Sancor Seguros",              tseg:"Todo riesgo",                          seguro:"2027-03-30",          vtv:"",           imp:"",           km:0,      lsrv:0,     estado:"disponible", taller:"",                        obs:""},
-  {id:6, pat:"AI357II", pk:"AI357II",   veh:"BYD Song Pro DM-I GS",         anio:2026, und:"GEMA", chasis:"LC0C74C43T5039273",    motor:"BYD472QAS25709601",  aseg:"",              tseg:"",                          seguro:"",          vtv:"2029-07-14", imp:"",           km:0,      lsrv:0,     estado:"disponible", taller:"",                        obs:"Grabado de autopartes pendiente"},
-  {id:7, pat:"AE565YL", pk:"AE565YL",   veh:"Renault Captur Zen 2.0",       anio:2021, und:"GEMA", chasis:"93YRHAAA2MJ692278",    motor:"F4RE412C198146",     aseg:"Sancor Seguros",              tseg:"Todo riesgo",                          seguro:"2027-03-30",          vtv:"2024-01-05", imp:"",           km:0,      lsrv:0,     estado:"disponible", taller:"",                        obs:""},
-  {id:17,pat:"KKO 511", pk:"KKO511",   veh:"Chevrolet Classic 1.4 3P LT",  anio:2011, und:"GEMA", chasis:"",                     motor:"",                   aseg:"Sancor Seguros", tseg:"Terceros",  seguro:"2027-03-30", vtv:"",           imp:"",           km:0,      lsrv:0,     estado:"disponible", taller:"",                        obs:"Poliza 13793076"},
-  {id:18,pat:"TDH 940", pk:"TDH940",   veh:"Ford E 250 Econoline",          anio:1993, und:"GEMA", chasis:"",                     motor:"",                   aseg:"Sancor Seguros", tseg:"Terceros",  seguro:"2027-03-30", vtv:"2027-10-24",           imp:"",           km:0,      lsrv:0,     estado:"disponible", taller:"",                        obs:"Poliza 13793076"},
+  {id:1, pat:"IQM 750", pk:"IQM750",    veh:"Alfa Romeo Mito",              anio:2010, und:"GEMA", chasis:"ZAR955000A1066274",    motor:"199A80001441914",    aseg:"Sancor Seguros", tseg:"Todo riesgo", seguro:"2027-03-30", vtv:"2025-09-01", imp:"2025-12-31", km:89400,  lsrv:82000, estado:"taller",     taller:"Taller Matano",           obs:"Revision tren delantero - ruido rueda derecha", telepase_id:"90206625"},
+  {id:2, pat:"XMV 557", pk:"XMV557",    veh:"Ford 37",                      anio:1937, und:"GEMA", chasis:"",                     motor:"",                   aseg:"",              tseg:"",                          seguro:"2025-08-20", vtv:"2025-07-15", imp:"2025-12-31", km:12000,  lsrv:10000, estado:"taller",     taller:"Autos Clasicos Etchard",  obs:"Cilindro freno + soporte espejo + ornamento baul + cerradura guantera", telepase_id:"62950196"},
+  {id:3, pat:"AF614EH", pk:"AF614EH",   veh:"Toyota Corolla Cross HEV 1.8", anio:2022, und:"GEMA", chasis:"9BRKZAAG6P0634349",    motor:"2ZR2R19270",         aseg:"",              tseg:"Todo riesgo",               seguro:"",          vtv:"2025-12-10", imp:"2025-12-31", km:0,      lsrv:0,     estado:"disponible", taller:"",                        obs:"Grabado de autopartes pendiente", telepase_id:"98977696"},
+  {id:4, pat:"NVH 793", pk:"NVH793",    veh:"Mercedes Benz ML 350 4MATIC",  anio:2014, und:"GEMA", chasis:"WDCDA5HB2EA351490",    motor:"27695530595350",     aseg:"Sancor Seguros",              tseg:"Todo riesgo",                          seguro:"2027-03-30",          vtv:"",           imp:"",           km:0,      lsrv:0,     estado:"disponible", taller:"",                        obs:"", telepase_id:"90494337"},
+  {id:5, pat:"GJA 632", pk:"GJA632",    veh:"Kia Carnival EX",              anio:2007, und:"GEMA", chasis:"KNAMB761376161108",    motor:"J37200334",          aseg:"Sancor Seguros",              tseg:"Todo riesgo",                          seguro:"2027-03-30",          vtv:"",           imp:"",           km:0,      lsrv:0,     estado:"disponible", taller:"",                        obs:"", telepase_id:"91072359"},
+  {id:6, pat:"AI357II", pk:"AI357II",   veh:"BYD Song Pro DM-I GS",         anio:2026, und:"GEMA", chasis:"LC0C74C43T5039273",    motor:"BYD472QAS25709601",  aseg:"",              tseg:"",                          seguro:"",          vtv:"2029-07-14", imp:"",           km:0,      lsrv:0,     estado:"disponible", taller:"",                        obs:"Grabado de autopartes pendiente", telepase_id:"62309763"},
+  {id:7, pat:"AE565YL", pk:"AE565YL",   veh:"Renault Captur Zen 2.0",       anio:2021, und:"GEMA", chasis:"93YRHAAA2MJ692278",    motor:"F4RE412C198146",     aseg:"Sancor Seguros",              tseg:"Todo riesgo",                          seguro:"2027-03-30",          vtv:"2024-01-05", imp:"",           km:0,      lsrv:0,     estado:"disponible", taller:"",                        obs:"", telepase_id:""},
+  {id:17,pat:"KKO 511", pk:"KKO511",   veh:"Chevrolet Classic 1.4 3P LT",  anio:2011, und:"GEMA", chasis:"",                     motor:"",                   aseg:"Sancor Seguros", tseg:"Terceros",  seguro:"2027-03-30", vtv:"",           imp:"",           km:0,      lsrv:0,     estado:"disponible", taller:"",                        obs:"Poliza 13793076", telepase_id:"90169488"},
+  {id:18,pat:"TDH 940", pk:"TDH940",   veh:"Ford E 250 Econoline",          anio:1993, und:"GEMA", chasis:"",                     motor:"",                   aseg:"Sancor Seguros", tseg:"Terceros",  seguro:"2027-03-30", vtv:"2027-10-24",           imp:"",           km:0,      lsrv:0,     estado:"disponible", taller:"",                        obs:"Poliza 13793076", telepase_id:"62950195"},
   {id:8, pat:"AD884SW", pk:"AD884SW",   veh:"Chevrolet Onix 1.4 JOY LS",    anio:2019, und:"URC",  chasis:"9BGKL48T0KG315723",   motor:"JTV018975",          aseg:"",              tseg:"",                          seguro:"",          vtv:"",           imp:"",           km:120348, lsrv:0,     estado:"taller",     taller:"Perito Seguro",           obs:"Por revision perito seguro"},
   {id:9, pat:"AD884TA", pk:"AD884TA",   veh:"Chevrolet Onix 1.4 JOY LS",    anio:2019, und:"URC",  chasis:"9BGKL48T0KG315533",   motor:"JTV018374",          aseg:"",              tseg:"",                          seguro:"",          vtv:"",           imp:"",           km:150000, lsrv:0,     estado:"disponible", taller:"",                        obs:""},
   {id:10,pat:"AF965YK", pk:"AF965YK",   veh:"Fiat Cronos 1.3 Drive",        anio:2023, und:"URC",  chasis:"8AP359AF2RU295351",   motor:"552820598467446",    aseg:"",              tseg:"",                          seguro:"",          vtv:"",           imp:"",           km:42659,  lsrv:0,     estado:"disponible", taller:"",                        obs:""},
@@ -539,6 +580,11 @@ function renderDetail(){
   if(v.motor)  h+='<div><div class="vm-label">Motor</div><div class="vm-val">'+v.motor+'</div></div>';
   h+='<div><div class="vm-label">Unidad</div><div class="vm-val nm">'+v.und+'</div></div>';
   if(v.tseg) h+='<div><div class="vm-label">Seguro</div><div class="vm-val nm">'+v.tseg+'</div></div>';
+  h+='<div id="tpse-wrap-'+v.id+'" style="cursor:pointer" onclick="editTelepase('+v.id+')" title="Click para editar">'
+    +'<div class="vm-label">TelePASE</div>'
+    +'<div class="vm-val nm" style="color:'+(v.telepase_id?'var(--tx)':'var(--tx3)')+';display:flex;align-items:center;gap:4px">'
+    +(v.telepase_id?v.telepase_id:'<span style="font-size:10px">+ Agregar</span>')
+    +' <i class="ti ti-pencil" style="font-size:9px;color:var(--tx3)"></i></div></div>';
   if(v.aseg) h+='<div><div class="vm-label">Aseg.</div><div class="vm-val nm">'+v.aseg+'</div></div>';
   h+='</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">'+badge;
   if(tmT>0) h+='<span style="font-size:11px;color:var(--red);font-weight:600"><i class="ti ti-alert-triangle" style="font-size:11px"></i> $'+nAR(tmT)+'</span>';
@@ -690,6 +736,37 @@ function openKm(id){
   document.getElementById("modal").classList.add("open");
 }
 
+async function editTelepase(id){
+  var v=flota.find(function(f){return f.id===id;});
+  if(!v) return;
+  var wrap=document.getElementById("tpse-wrap-"+id);
+  if(!wrap) return;
+  var cur=v.telepase_id||"";
+  wrap.innerHTML='<div class="vm-label">TelePASE</div>'
+    +'<div style="display:flex;align-items:center;gap:4px;margin-top:2px">'
+    +'<input id="tpse-inp-'+id+'" value="'+cur+'" placeholder="Nro dispositivo" '
+    +'style="font-size:11px;font-family:monospace;padding:3px 6px;border:1px solid var(--bdr2);border-radius:4px;width:110px;outline:none" '
+    +'onclick="event.stopPropagation()">'
+    +'<button onclick="event.stopPropagation();saveTelepase('+id+')" style="font-size:10px;padding:3px 7px;background:var(--tx);color:#fff;border:none;border-radius:4px;cursor:pointer">✓</button>'
+    +'<button onclick="event.stopPropagation();selVeh('+id+')" style="font-size:10px;padding:3px 7px;background:var(--sur2);border:1px solid var(--bdr);border-radius:4px;cursor:pointer">✕</button>'
+    +'</div>';
+  setTimeout(function(){var inp=document.getElementById("tpse-inp-"+id);if(inp)inp.focus();},50);
+}
+
+async function saveTelepase(id){
+  var v=flota.find(function(f){return f.id===id;});
+  if(!v) return;
+  var inp=document.getElementById("tpse-inp-"+id);
+  var val=(inp?inp.value.trim():"");
+  v.telepase_id=val;
+  var r=await fetch(SUPA_URL+"/rest/v1/vehiculos?id=eq."+id,{
+    method:"PATCH",
+    headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY},
+    body:JSON.stringify({telepase_id:val||null})
+  });
+  selVeh(id);
+}
+
 function editVeh(id){
   var v=flota.find(function(f){return f.id===id;});
   mtype="edit_"+id;
@@ -832,6 +909,135 @@ function saveModal(){
 }
 
 function closeBg(e){ if(e.target.id==="modal") document.getElementById("modal").classList.remove("open"); }
+
+// ── Vistas ────────────────────────────────────────────────────────────────────
+var currentView = "dashboard";
+function showView(v){
+  currentView = v;
+  document.getElementById("view-dashboard").style.display = v==="dashboard" ? "" : "none";
+  document.getElementById("view-reportes").style.display  = v==="reportes"  ? "" : "none";
+  document.querySelectorAll(".nav-item").forEach(function(el){ el.classList.remove("active"); });
+  document.getElementById("nav-"+v).classList.add("active");
+  if(v==="reportes") cargarReportes();
+}
+
+// ── Reportes ──────────────────────────────────────────────────────────────────
+var reportesCache = [];
+
+async function cargarReportes(){
+  var el = document.getElementById("rep-list");
+  el.innerHTML = '<div class="empty" style="padding:40px 0"><i class="ti ti-loader" style="font-size:24px;display:block;margin-bottom:8px"></i>Cargando...</div>';
+  var data = await supaFetch("/rest/v1/reportes?select=*&order=created_at.desc","GET");
+  if(!data){ el.innerHTML='<div class="empty"><i class="ti ti-alert-circle"></i>Error al cargar reportes. Verificá que la tabla existe en Supabase.</div>'; return; }
+  reportesCache = data;
+  // badge sidebar
+  var pend = data.filter(function(r){return r.estado==="pendiente";}).length;
+  var badge = document.getElementById("rep-badge");
+  if(pend>0){ badge.style.display=""; badge.textContent=pend; }
+  else badge.style.display="none";
+  renderReportes();
+}
+
+function renderReportes(){
+  var data = reportesCache;
+  if(!data || data.length===0){
+    document.getElementById("rep-list").innerHTML='<div class="empty" style="padding:40px 0"><i class="ti ti-clipboard-list" style="font-size:24px;display:block;margin-bottom:8px"></i>Sin reportes por el momento</div>';
+    return;
+  }
+  var tipoClass={falla:"rt-falla",taller:"rt-taller",km:"rt-km",otro:"rt-otro"};
+  var tipoLabel={falla:"Falla",taller:"Taller",km:"Km",otro:"Otro"};
+  var h="";
+  for(var i=0;i<data.length;i++){
+    var r=data[i];
+    var est=r.estado||"pendiente";
+    var tc=tipoClass[r.tipo]||"rt-otro";
+    var tl=tipoLabel[r.tipo]||r.tipo;
+    var fecha=r.created_at?(new Date(r.created_at)).toLocaleString("es-AR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):"";
+    var estBadge=est==="pendiente"?'<span class="rep-estado-badge reb-pendiente"><i class="ti ti-clock" style="font-size:10px"></i> Pendiente</span>'
+      :est==="aprobado"?'<span class="rep-estado-badge reb-aprobado"><i class="ti ti-check" style="font-size:10px"></i> Aprobado</span>'
+      :'<span class="rep-estado-badge reb-rechazado"><i class="ti ti-x" style="font-size:10px"></i> Rechazado</span>';
+    h+='<div class="rep-card rep-'+est+'" id="rc-'+r.id+'">';
+    var patDisplay = r.patente || r.vehiculo_pat || "Sin patente";
+    h+='<div class="rep-hdr"><div><span class="rep-pat">'+patDisplay+'</span><span class="rep-tipo '+tc+'">'+tl+'</span></div>'+estBadge+'</div>';
+    if(r.descripcion) h+='<div class="rep-desc">'+escHtml(r.descripcion)+'</div>';
+    h+='<div class="rep-meta">';
+    if(fecha) h+='<span><i class="ti ti-calendar"></i>'+fecha+'</span>';
+    var choferDisplay = r.nombre_quien || r.chofer || "";
+    if(choferDisplay) h+='<span><i class="ti ti-user"></i>Usuario: '+escHtml(choferDisplay)+'</span>';
+    if(r.km) h+='<span><i class="ti ti-speedometer"></i>'+r.km.toLocaleString("es-AR")+' km</span>';
+    else if(r.km_actual) h+='<span><i class="ti ti-speedometer"></i>'+r.km_actual.toLocaleString("es-AR")+' km</span>';
+    h+='</div>';
+    // Foto/video (columna foto_url es string con URLs separadas por coma, fotos es array)
+    var mediaUrls = [];
+    if(r.foto_url) mediaUrls = mediaUrls.concat(r.foto_url.split(",").map(function(u){return u.trim();}).filter(Boolean));
+    if(r.fotos && r.fotos.length) mediaUrls = mediaUrls.concat(r.fotos);
+    if(mediaUrls.length){
+      h+='<div class="rep-fotos">';
+      for(var j=0;j<mediaUrls.length;j++){
+        var url=mediaUrls[j];
+        var isVideo=/\.(mp4|mov|avi|webm|mkv)/i.test(url)||url.indexOf("video")>-1;
+        if(isVideo){
+          h+='<video style="width:160px;height:100px;object-fit:cover;border-radius:6px;border:1px solid var(--bdr);cursor:pointer" controls playsinline preload="metadata" onclick="event.stopPropagation()" src="'+url+'"></video>';
+        } else {
+          h+='<img class="rep-foto" src="'+url+'" alt="foto" onclick="window.open(\''+url+'\',\'_blank\')">';
+        }
+      }
+      h+='</div>';
+    }
+    if(est==="pendiente"){
+      h+='<div class="rep-actions">';
+      h+='<button class="btn-aprobar" onclick="accionReporte(\''+r.id+'\',\'aprobado\')"><i class="ti ti-check"></i>Aprobar</button>';
+      h+='<button class="btn-rechazar" onclick="accionReporte(\''+r.id+'\',\'rechazado\')"><i class="ti ti-x"></i>Rechazar</button>';
+      h+='</div>';
+    }
+    h+='</div>';
+  }
+  document.getElementById("rep-list").innerHTML=h;
+}
+
+function escHtml(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+async function accionReporte(id, accion){
+  // Actualizar estado en Supabase
+  var r = await fetch(SUPA_URL+"/rest/v1/reportes?id=eq."+id, {
+    method:"PATCH",
+    headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY,"Prefer":"return=representation"},
+    body: JSON.stringify({estado: accion})
+  });
+  if(!r.ok){ alert("Error al actualizar el reporte"); return; }
+  // Si se aprueba y es tipo falla/taller, crear reparación automáticamente
+  if(accion==="aprobado"){
+    var rep = reportesCache.find(function(x){return String(x.id)===String(id);});
+    if(rep && (rep.tipo==="falla"||rep.tipo==="taller")){
+      var repPat=rep.patente||rep.vehiculo_pat||"";
+      var veh = repPat ? flota.find(function(v){return v.pat&&v.pat.replace(/\s/g,"").toUpperCase()===repPat.replace(/\s/g,"").toUpperCase();}) : flota.find(function(v){return v.id===rep.vehiculo_id;});
+      if(veh){
+        var hoy = new Date().toISOString().slice(0,10);
+        reps.push({id:Date.now(),fid:veh.id,fecha:hoy,desc:"[Reporte chofer] "+(rep.descripcion||""),taller:rep.taller_sugerido||"",costo:0});
+        // Guardar en Supabase tabla reparaciones si existiera (opcional, tabla local por ahora)
+      }
+    }
+  }
+  // Actualizar cache local
+  reportesCache.forEach(function(x){ if(String(x.id)===String(id)) x.estado=accion; });
+  // Badge
+  var pend = reportesCache.filter(function(x){return x.estado==="pendiente";}).length;
+  var badge = document.getElementById("rep-badge");
+  if(pend>0){ badge.style.display=""; badge.textContent=pend; }
+  else badge.style.display="none";
+  renderReportes();
+}
+
+// Cargar badge de reportes pendientes al iniciar sesión
+async function cargarBadgeReportes(){
+  var data = await supaFetch("/rest/v1/reportes?select=id,estado&estado=eq.pendiente&order=id","GET");
+  if(data && data.length){
+    var badge = document.getElementById("rep-badge");
+    badge.style.display=""; badge.textContent=data.length;
+  }
+}
 
 // El render se inicia después del login exitoso
 </script>
