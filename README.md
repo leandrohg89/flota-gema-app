@@ -1,2 +1,1 @@
-# flota-gema
-Dashboard de gestión de flota vehicular
+ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS nro_pol text;
