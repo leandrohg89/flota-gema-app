@@ -335,6 +335,7 @@ async function supaLoad(){
     flota = data.map(function(r){
       return {id:r.id,pat:r.pat,pk:r.pk,veh:r.veh,anio:r.anio,und:r.und,
               chasis:r.chasis||"",motor:r.motor||"",aseg:r.aseg||"",tseg:r.tseg||"",
+              nro_pol:r.nro_pol||"",
               seguro:r.seguro||"",vtv:r.vtv||"",imp:r.imp||"",km:r.km||0,
               lsrv:r.lsrv||0,estado:r.estado||"disponible",taller:r.taller||"",obs:r.obs||"",
               telepase_id:r.telepase_id||""};
@@ -346,7 +347,7 @@ async function supaLoad(){
 
 async function supaSave(v){
   var opts = {method:"PATCH", headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY,"Prefer":"return=representation"}};
-  opts.body = JSON.stringify({pat:v.pat,pk:v.pk,veh:v.veh,anio:v.anio,und:v.und,chasis:v.chasis,motor:v.motor,aseg:v.aseg,tseg:v.tseg,seguro:v.seguro,vtv:v.vtv,imp:v.imp,km:v.km,lsrv:v.lsrv,estado:v.estado,taller:v.taller,obs:v.obs,telepase_id:v.telepase_id||null});
+  opts.body = JSON.stringify({pat:v.pat,pk:v.pk,veh:v.veh,anio:v.anio,und:v.und,chasis:v.chasis,motor:v.motor,aseg:v.aseg,tseg:v.tseg,nro_pol:v.nro_pol||null,seguro:v.seguro,vtv:v.vtv,imp:v.imp,km:v.km,lsrv:v.lsrv,estado:v.estado,taller:v.taller,obs:v.obs,telepase_id:v.telepase_id||null});
   var r = await fetch(SUPA_URL+"/rest/v1/vehiculos?id=eq."+v.id, opts);
   console.log("supaSave status:", r.status, "id="+v.id);
   return r.ok;
@@ -504,6 +505,7 @@ function renderDetail(){
     var extraInputs="";
     if(field==="seguro"){
       extraInputs+="<input type='text' class='ie-aseg' placeholder='Aseguradora' value='"+(v.aseg||"")+"' style='width:100%;border:1px solid #d0ceca;border-radius:6px;padding:5px 8px;font-size:12px;margin-bottom:5px;font-family:inherit'>";
+      extraInputs+="<input type='text' class='ie-nropol' placeholder='Nro. de póliza' value='"+(v.nro_pol||"")+"' style='width:100%;border:1px solid #d0ceca;border-radius:6px;padding:5px 8px;font-size:12px;margin-bottom:5px;font-family:monospace'>";
       extraInputs+="<select class='ie-tseg' style='width:100%;border:1px solid #d0ceca;border-radius:6px;padding:5px 8px;font-size:12px;margin-bottom:5px;font-family:inherit'>";
       var opts=["Todo riesgo","Todo riesgo con franquicia","Terceros completo","Terceros basico"];
       for(var k=0;k<opts.length;k++) extraInputs+="<option"+(v.tseg===opts[k]?" selected":"")+">"+opts[k]+"</option>";
@@ -529,7 +531,7 @@ function renderDetail(){
   }
 
 
-  var segSub=(v.aseg||"Sin aseguradora")+(v.seguro?" - "+(sd<=0?"Vencido hace "+Math.abs(sd)+"d":sd>365?"Vigente":lbl(sd)):" - Completar");
+  var segSub=(v.aseg||"Sin aseguradora")+(v.nro_pol?" · Pól. "+v.nro_pol:"")+(v.seguro?" - "+(sd<=0?"Vencido hace "+Math.abs(sd)+"d":sd>365?"Vigente":lbl(sd)):" - Completar");
   var vtvSub=v.vtv?(vd<=0?"Vencida hace "+Math.abs(vd)+"d":vd>365?"Vigente":lbl(vd)):"Completar fecha";
   var impSub=v.imp?(id<=0?"Vencido hace "+Math.abs(id)+"d":id>365?"Vigente":lbl(id)):"Completar fecha";
   var srvC=v.km>0?(kpct>=1?"dal":kpct>=0.7?"dwn":"dok"):"dwn";
@@ -586,6 +588,7 @@ function renderDetail(){
     +(v.telepase_id?v.telepase_id:'<span style="font-size:10px">+ Agregar</span>')
     +' <i class="ti ti-pencil" style="font-size:9px;color:var(--tx3)"></i></div></div>';
   if(v.aseg) h+='<div><div class="vm-label">Aseg.</div><div class="vm-val nm">'+v.aseg+'</div></div>';
+  if(v.nro_pol) h+='<div><div class="vm-label">Póliza</div><div class="vm-val" style="font-family:monospace;font-size:11px">'+v.nro_pol+'</div></div>';
   h+='</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">'+badge;
   if(tmT>0) h+='<span style="font-size:11px;color:var(--red);font-weight:600"><i class="ti ti-alert-triangle" style="font-size:11px"></i> $'+nAR(tmT)+'</span>';
   h+='</div></div>';
@@ -644,9 +647,10 @@ function saveIE2(uid,field,vid){
   var dateEl=wrap.querySelector(".ie-date");
   if(dateEl && dateEl.value) v[field]=dateEl.value;
   if(field==="seguro"){
-    var ae=wrap.querySelector(".ie-aseg"), te=wrap.querySelector(".ie-tseg");
-    if(ae && ae.value) v.aseg=ae.value;
+    var ae=wrap.querySelector(".ie-aseg"), te=wrap.querySelector(".ie-tseg"), pe=wrap.querySelector(".ie-nropol");
+    if(ae) v.aseg=ae.value;
     if(te && te.value) v.tseg=te.value;
+    if(pe) v.nro_pol=pe.value;
   }
   renderSel(); renderDetail();
 }
@@ -674,13 +678,17 @@ function saveIE(field,vid){ saveIE2("ie-"+vid+"-"+field, field, vid); }
 function saveIE2(uid,field,vid){
   var v=flota.find(function(f){return f.id===vid;});
   if(!v){ console.error("saveIE2: vehiculo no encontrado id="+vid); return; }
-  var dateEl=document.getElementById(uid+"-date");
+  var wrap=document.getElementById(uid);
+  var dateEl=wrap?wrap.querySelector(".ie-date"):document.getElementById(uid+"-date");
   console.log("saveIE2 uid="+uid+" field="+field+" vid="+vid+" dateEl="+dateEl+" val="+(dateEl?dateEl.value:"null"));
   if(dateEl && dateEl.value) v[field]=dateEl.value;
   if(field==="seguro"){
-    var ae=document.getElementById(uid+"-aseg"), te=document.getElementById(uid+"-tseg");
+    var ae=wrap?wrap.querySelector(".ie-aseg"):null;
+    var te=wrap?wrap.querySelector(".ie-tseg"):null;
+    var pe=wrap?wrap.querySelector(".ie-nropol"):null;
     if(ae) v.aseg=ae.value;
-    if(te) v.tseg=te.value;
+    if(te && te.value) v.tseg=te.value;
+    if(pe) v.nro_pol=pe.value;
   }
   console.log("Guardando en Supabase id="+v.id+" "+field+"="+v[field]);
   supaSave(v).then(function(r){ console.log("Supabase PATCH result:", r); });
